@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+function test_postgresql {
+  pg_isready -h "${POSTGRESQL_HOST}" -U "${POSTGRESQL_USER}"
+}
+
+function test_redis {
+  redis-cli -h "${REDIS_HOST}" PING
+}
+
+function test_mysql {
+  mysqladmin -h "${MYSQL_HOST}" ping
+}
+
+count=0
+# Chain tests together by using &&
+until ( test_mysql )
+do
+  ((count++))
+  if [ ${count} -gt 50 ]
+  then
+    echo "Services didn't become ready in time"
+    exit 1
+  fi
+  sleep 0.1
+done
